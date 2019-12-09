@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--#########################################
+  
+      "The only effect of the langversion switch is to put the compiler in 
+       a mode in which use of features from a version of the language higher than 
+       the given version cause the compiler to emit an error." -Eric Lippert 
+ 
+      Once new language versions have been reviewed, approved, and rollout of updates
+      has been planned for applicable devs, update LangVersion here.
+
+      https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/
+      
+  #########################################-->
+      <PropertyGroup>
+        <LangVersion>8.0</LangVersion>
+        <NeutralLanguage>en</NeutralLanguage>
+    </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <!-- Ideally this is always enabled, but that tends to hurt developer productivity -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Make sure any documentation comments which are included in code get checked for syntax during the build, but do
+      not report warnings for missing comments.
+      CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'parameter' (but other parameters do)
+      CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
+    -->
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn),1573,1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Show launchSettings.json in the project if it exists. -->
+    <None Include="$(AppDesignerFolder)\launchSettings.json" Condition="Exists('$(AppDesignerFolder)\launchSettings.json')" />
+  </ItemGroup>
+
+</Project>
