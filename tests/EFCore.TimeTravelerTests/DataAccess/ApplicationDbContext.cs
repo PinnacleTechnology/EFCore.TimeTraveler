@@ -33,13 +33,19 @@ namespace EFCore.TimeTravelerTests.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var appleEntity = modelBuilder.Entity<Apple>();
+            appleEntity.EnableTemporalQuery();
+
             appleEntity.HasKey(apple => apple.Id);
             appleEntity.Property(b => b.FruitStatus)
                 .IsRequired();
             
             var wormEntity = modelBuilder.Entity<Worm>();
+            wormEntity.EnableTemporalQuery();
+
             wormEntity.HasKey(worm => worm.Id);
-            wormEntity.Property(worm => worm.Id).ValueGeneratedOnAdd();
+            wormEntity.Property(worm => worm.Id)
+                .ValueGeneratedOnAdd();
+
 
             wormEntity.HasOne(worm => worm.Apple)
                 .WithMany(apple => apple.Worms)
