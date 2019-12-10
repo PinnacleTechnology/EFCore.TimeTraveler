@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCore.TimeTravelerTests.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20191209212051_TemporalApples")]
-    partial class TemporalApples
+    [Migration("20191209231909_Initialize")]
+    partial class Initialize
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,7 +21,7 @@ namespace EFCore.TimeTravelerTests.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("HistoryOfFruit.Apple", b =>
+            modelBuilder.Entity("EFCore.TimeTravelerTests.Apple", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,7 +32,35 @@ namespace EFCore.TimeTravelerTests.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Apples");
+                    b.ToTable("Apple");
+                });
+
+            modelBuilder.Entity("EFCore.TimeTravelerTests.Worm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AppleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppleId");
+
+                    b.ToTable("Worm");
+                });
+
+            modelBuilder.Entity("EFCore.TimeTravelerTests.Worm", b =>
+                {
+                    b.HasOne("EFCore.TimeTravelerTests.Apple", "Apple")
+                        .WithMany("Worms")
+                        .HasForeignKey("AppleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

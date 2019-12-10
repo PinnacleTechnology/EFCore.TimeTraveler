@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EFCore.TimeTravelerTests
 {
@@ -6,5 +7,7 @@ namespace EFCore.TimeTravelerTests
     {
         public Guid Id { get; set; }
         public FruitStatus FruitStatus { get; set; }
+
+        public List<Worm> Worms { get; set; } = new List<Worm>();
     }
 }

@@ -18,6 +18,7 @@ namespace EFCore.TimeTraveler
         {
             _temporalTables = new TemporalTables();
             _temporalTables.Add("Apple");
+            _temporalTables.Add("Worm");
 
         }
         public override Task<InterceptionResult<DbDataReader>> ReaderExecutingAsync(

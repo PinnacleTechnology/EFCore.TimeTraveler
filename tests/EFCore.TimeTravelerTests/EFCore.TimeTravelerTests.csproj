@@ -6,8 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20191209210654_InitialCreate.cs" />
+    <Compile Remove="Migrations\20191209210654_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20191209212051_TemporalApples.cs" />
+    <Compile Remove="Migrations\20191209212051_TemporalApples.Designer.cs" />
+    <Compile Remove="Migrations\20191209230131_TrackWorms.cs" />
+    <Compile Remove="Migrations\20191209230131_TrackWorms.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.0.0" />
+    <PackageReference Include="EntityFrameworkCore.TemporalTables" Version="1.0.6" />
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />

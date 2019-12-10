@@ -6,6 +6,7 @@ using Autofac.Extensions.DependencyInjection;
 using EFCore.TimeTraveler;
 using EFCore.TimeTravelerTests.DataAccess;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,33 +42,49 @@ namespace EFCore.TimeTravelerTests
 
             await AsTimePasses();
 
-            await UpdateFruitStatus(appleId, FruitStatus.Rotten);
+            await UpdateFruitStatus(appleId, FruitStatus.Rotten, new[]{"Moe"});
 
             var rottenAppleTime = DateTime.UtcNow;
 
             await AsTimePasses();
 
-            await UpdateFruitStatus(appleId, FruitStatus.Fuzzy);
+            await UpdateFruitStatus(appleId, FruitStatus.Fuzzy, new[] { "Hairy", "Curly" });
 
             var fuzzyAppleTime = DateTime.UtcNow;
 
+            using var assertionScope = new AssertionScope();
+            ;
+
             (await GetApple(appleId))
-                .FruitStatus
-                .Should().Be(FruitStatus.Fuzzy);
+                .Should()
+                .BeEquivalentTo(new
+                {
+                    FruitStatus = FruitStatus.Fuzzy,
+                    Worms = new[] { new {Name = "Hairy"}, new {Name = "Curly"}, new {Name = "Moe"} }
+                }, options => options.ExcludingMissingMembers());
 
             using (new TemporalQuery(rottenAppleTime))
             {
                 (await GetApple(appleId))
-                    .FruitStatus
-                    .Should().Be(FruitStatus.Rotten);
+                    .Should()
+                    .BeEquivalentTo(new
+                    {
+                        FruitStatus = FruitStatus.Rotten,
+                        Worms = new[] { new { Name = "Moe" } }
+                    }, options => options.ExcludingMissingMembers());
 
             }
 
             using (new TemporalQuery(overripeAppleTime))
             {
                 (await GetApple(appleId))
-                    .FruitStatus
-                    .Should().Be(FruitStatus.Overripe);
+                    .Should()
+                    .BeEquivalentTo(new
+                    {
+                        FruitStatus = FruitStatus.Overripe,
+                        Worms = Array.Empty<Worm>()
+                    }, options => options.ExcludingMissingMembers());
+
 
             }
 
@@ -94,7 +111,7 @@ namespace EFCore.TimeTravelerTests
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
-            return await context.Apples.Where(a => a.Id == appleId).SingleAsync();
+            return await context.Apples.Include(a => a.Worms).Where(a => a.Id == appleId).AsNoTracking().SingleAsync();
         }
 
 
@@ -110,7 +127,7 @@ namespace EFCore.TimeTravelerTests
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
             await context.Database.EnsureDeletedAsync();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
         }
 
         private static void Configure()
@@ -120,25 +137,20 @@ namespace EFCore.TimeTravelerTests
 
             services.AddDbContext<ApplicationDbContext>();
 
-            // builder.RegisterType<DemoService>().As<IDemoService>();
-            //
-            // Add other services ...
-            //
-
-
             builder.Populate(services);
             var appContainer = builder.Build();
             _serviceProvider = new AutofacServiceProvider(appContainer);
         }
 
-        private static async Task UpdateFruitStatus(Guid appleId, FruitStatus fruitStatus)
+        private static async Task UpdateFruitStatus(Guid appleId, FruitStatus fruitStatus, string[] worms = null)
         {
             using var localScope = _serviceProvider.CreateScope();
-
+            worms ??= Array.Empty<string>();
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
             var myApple = await context.Apples.Where(a => a.Id == appleId).SingleAsync();
 
             myApple.FruitStatus = fruitStatus;
+            myApple.Worms.AddRange(worms.Select(wormName => new Worm{Name = wormName}));
 
             await context.SaveChangesAsync();
         }
