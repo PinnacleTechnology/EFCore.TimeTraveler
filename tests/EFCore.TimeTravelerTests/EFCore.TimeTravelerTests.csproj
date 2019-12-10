@@ -12,6 +12,8 @@
     <Compile Remove="Migrations\20191209212051_TemporalApples.Designer.cs" />
     <Compile Remove="Migrations\20191209230131_TrackWorms.cs" />
     <Compile Remove="Migrations\20191209230131_TrackWorms.Designer.cs" />
+    <Compile Remove="Migrations\20191210154131_WormFriendsAndWeapons.cs" />
+    <Compile Remove="Migrations\20191210154131_WormFriendsAndWeapons.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +21,7 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.0.0" />
     <PackageReference Include="EntityFrameworkCore.TemporalTables" Version="1.0.6" />
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
+    <PackageReference Include="Humanizer" Version="2.7.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0">
@@ -26,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

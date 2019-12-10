@@ -1,5 +1,6 @@
 ﻿using EFCore.TimeTraveler;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EFCore.TimeTravelerTests.DataAccess
 {
@@ -22,9 +23,13 @@ namespace EFCore.TimeTravelerTests.DataAccess
 
         public DbSet<Apple> Apples { get; set; }
 
+        public static readonly ILoggerFactory MyLoggerFactory
+            = LoggerFactory.Create(builder => { builder.AddConsole(); });
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(ConnectionString)
+                .UseLoggerFactory(MyLoggerFactory) // Warning: Do not create a new ILoggerFactory instance each time
                 .AddInterceptors(new TimeTravelInterceptor());
 
             base.OnConfiguring(optionsBuilder);
@@ -46,11 +51,34 @@ namespace EFCore.TimeTravelerTests.DataAccess
             wormEntity.Property(worm => worm.Id)
                 .ValueGeneratedOnAdd();
 
+            wormEntity.HasMany(worm => worm.Weapons)
+                .WithOne(weapon => weapon.Worm)
+                .HasForeignKey(weapon => weapon.WormId);
 
             wormEntity.HasOne(worm => worm.Apple)
                 .WithMany(apple => apple.Worms)
                 .HasForeignKey(worm => worm.AppleId);
 
+            wormEntity.Ignore(worm => worm.Friendships);
+            wormEntity.Ignore(worm => worm.FriendsNames);
+
+            var wormFriendshipEntity = modelBuilder.Entity<WormFriendship>();
+            wormFriendshipEntity.EnableTemporalQuery();
+
+            wormFriendshipEntity.HasKey(worm => worm.Id);
+
+            wormFriendshipEntity.HasOne(friendship => friendship.WormA)
+                .WithMany(worm => worm.FriendshipsA)
+                .HasForeignKey(friendship => friendship.WormAId);
+
+            wormFriendshipEntity.HasOne(f => f.WormB)
+                .WithMany(worm => worm.FriendshipsB)
+                .HasForeignKey(friendship => friendship.WormBId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            
+            var wormWeaponEntity = modelBuilder.Entity<WormWeapon>();
+            wormWeaponEntity.EnableTemporalQuery();
+            
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 // Use the entity name instead of the Context.DbSet<T> name

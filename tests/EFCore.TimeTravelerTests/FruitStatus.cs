@@ -5,7 +5,6 @@
         Unknown = 0,
         Unripe,
         Ripe,
-        Overripe,
         Rotten,
         Fuzzy
     }

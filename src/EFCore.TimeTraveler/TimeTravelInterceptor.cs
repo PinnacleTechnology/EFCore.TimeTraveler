@@ -16,10 +16,12 @@ namespace EFCore.TimeTraveler
 
         public TimeTravelInterceptor()
         {
+            // TODO: Read from entity mappings (entity.IsTemporal)
             _temporalTables = new TemporalTables();
             _temporalTables.Add("Apple");
             _temporalTables.Add("Worm");
-
+            _temporalTables.Add("WormWeapon");
+            _temporalTables.Add("WormFriendship");
         }
         public override Task<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
             DbCommand command,
