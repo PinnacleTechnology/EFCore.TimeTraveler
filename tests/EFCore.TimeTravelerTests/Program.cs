@@ -94,7 +94,7 @@ namespace EFCore.TimeTravelerTests
                         }
                     }, options => options.ExcludingMissingMembers());
 
-            using (new TemporalQuery(rottenAppleTime))
+            using (TemporalQuery.At(rottenAppleTime))
             {
                 (await GetApple(appleId))
                     .Should()
@@ -119,25 +119,18 @@ namespace EFCore.TimeTravelerTests
                         options => options.ExcludingMissingMembers());
             }
 
-            using (new TemporalQuery(ripeAppleTime))
+            
+            await Task.WhenAll(new[]
             {
-                (await GetApple(appleId))
-                    .Should()
-                    .BeEquivalentTo(new { FruitStatus = FruitStatus.Ripe, Worms = Array.Empty<Worm>() },
-                        options => options.ExcludingMissingMembers());
-            }
+                AssertAtRipeAppleTime(ripeAppleTime, appleId),
+                AssertAtUnripeAppleTime(unripeAppleTime, appleId),
+                AssertAtRottenAppleTime(rottenAppleTime, appleId)
+            });
+        }
 
-            using (new TemporalQuery(unripeAppleTime))
-            {
-                (await GetApple(appleId))
-                    .Should()
-                    .BeEquivalentTo(new { FruitStatus = FruitStatus.Unripe, Worms = Array.Empty<Worm>() },
-                        options => options.ExcludingMissingMembers());
-
-            }
-
-
-            using (new TemporalQuery(rottenAppleTime))
+        private static async Task AssertAtRottenAppleTime(DateTime rottenAppleTime, Guid appleId)
+        {
+            using (TemporalQuery.At(rottenAppleTime))
             {
                 using var localScope = _serviceProvider.CreateScope();
                 var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
@@ -149,6 +142,28 @@ namespace EFCore.TimeTravelerTests
                 rottenAppleWorms
                     .Should()
                     .BeEquivalentTo(new[] {new {Name = "Moe"}},
+                        options => options.ExcludingMissingMembers());
+            }
+        }
+
+        private static async Task AssertAtUnripeAppleTime(DateTime unripeAppleTime, Guid appleId)
+        {
+            using (TemporalQuery.At(unripeAppleTime))
+            {
+                (await GetApple(appleId))
+                    .Should()
+                    .BeEquivalentTo(new {FruitStatus = FruitStatus.Unripe, Worms = Array.Empty<Worm>()},
+                        options => options.ExcludingMissingMembers());
+            }
+        }
+
+        private static async Task AssertAtRipeAppleTime(DateTime ripeAppleTime, Guid appleId)
+        {
+            using (TemporalQuery.At(ripeAppleTime))
+            {
+                (await GetApple(appleId))
+                    .Should()
+                    .BeEquivalentTo(new {FruitStatus = FruitStatus.Ripe, Worms = Array.Empty<Worm>()},
                         options => options.ExcludingMissingMembers());
             }
         }

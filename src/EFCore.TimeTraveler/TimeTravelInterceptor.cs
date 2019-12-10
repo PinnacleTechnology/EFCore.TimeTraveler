@@ -11,8 +11,7 @@ namespace EFCore.TimeTraveler
     {
         private readonly TemporalTables _temporalTables;
 
-        //TODO: Replace this global static var
-        public static DateTime? TimeTravelDate { get; set; } = null;
+        public static DateTime? TimeTravelDate => TemporalQuery.TargetDateTime;
 
         public TimeTravelInterceptor()
         {
