@@ -37,15 +37,15 @@ namespace EFCore.TimeTravelerTests.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var appleEntity = modelBuilder.Entity<Apple>();
-            appleEntity.EnableTemporalQuery();
+            var appleEntity = modelBuilder.Entity<Apple>()
+                .EnableTemporalQuery();
 
             appleEntity.HasKey(apple => apple.Id);
             appleEntity.Property(b => b.FruitStatus)
                 .IsRequired();
             
-            var wormEntity = modelBuilder.Entity<Worm>();
-            wormEntity.EnableTemporalQuery();
+            var wormEntity = modelBuilder.Entity<Worm>()
+                .EnableTemporalQuery();
 
             wormEntity.HasKey(worm => worm.Id);
             wormEntity.Property(worm => worm.Id)
@@ -62,8 +62,8 @@ namespace EFCore.TimeTravelerTests.DataAccess
             wormEntity.Ignore(worm => worm.Friendships);
             wormEntity.Ignore(worm => worm.FriendsNames);
 
-            var wormFriendshipEntity = modelBuilder.Entity<WormFriendship>();
-            wormFriendshipEntity.EnableTemporalQuery();
+            var wormFriendshipEntity = modelBuilder.Entity<WormFriendship>()
+                .EnableTemporalQuery();
 
             wormFriendshipEntity.HasKey(worm => worm.Id);
 
@@ -76,8 +76,8 @@ namespace EFCore.TimeTravelerTests.DataAccess
                 .HasForeignKey(friendship => friendship.WormBId)
                 .OnDelete(DeleteBehavior.ClientCascade);
             
-            var wormWeaponEntity = modelBuilder.Entity<WormWeapon>();
-            wormWeaponEntity.EnableTemporalQuery();
+            modelBuilder.Entity<WormWeapon>()
+                .EnableTemporalQuery();
             
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {

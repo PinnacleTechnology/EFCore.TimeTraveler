@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EFCore.TimeTraveler
 {
+    // TODO: Build this after the model is built based on the .EnableTemporalQuery() configuration
     public class TemporalTables
     {
         private readonly List<string> _tables = new List<string>();
