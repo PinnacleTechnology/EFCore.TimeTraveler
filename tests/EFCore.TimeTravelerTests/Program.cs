@@ -84,8 +84,6 @@ namespace EFCore.TimeTravelerTests
                         FruitStatus = FruitStatus.Overripe,
                         Worms = Array.Empty<Worm>()
                     }, options => options.ExcludingMissingMembers());
-
-
             }
 
             using (new TemporalQuery(ripeAppleTime))
@@ -102,6 +100,22 @@ namespace EFCore.TimeTravelerTests
                     .FruitStatus
                     .Should().Be(FruitStatus.Unripe);
 
+            }
+
+
+            using (new TemporalQuery(rottenAppleTime))
+            {
+                using var localScope = _serviceProvider.CreateScope();
+                var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
+                var rottenAppleWorms = await context.Apples
+                    .Where(a => a.Id == appleId)
+                    .Select(a => a.Worms)
+                    .AsNoTracking().ToListAsync();
+
+                rottenAppleWorms
+                    .Should()
+                    .BeEquivalentTo(new[] { new { Name = "Moe" } },
+                        options => options.ExcludingMissingMembers());
             }
         }
 
