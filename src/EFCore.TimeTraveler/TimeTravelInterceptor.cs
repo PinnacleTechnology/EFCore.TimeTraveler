@@ -1,39 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace EFCore.TimeTraveler
 {
     public class TimeTravelInterceptor : DbCommandInterceptor
     {
-        private readonly TemporalTables _temporalTables;
-
         public static DateTime? TimeTravelDate => TemporalQuery.TargetDateTime;
 
-        public TimeTravelInterceptor()
-        {
-            // TODO: Read from entity mappings (entity.IsTemporal)
-            _temporalTables = new TemporalTables();
-            _temporalTables.Add("Apple");
-            _temporalTables.Add("Worm");
-            _temporalTables.Add("WormWeapon");
-            _temporalTables.Add("WormFriendship");
-        }
+        internal const string TemporalTablesKey = "TemporalTables";
+
         public override Task<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
             DbCommand command,
             CommandEventData eventData,
             InterceptionResult<DbDataReader> result,
             CancellationToken cancellationToken = default)
         {
-            if (IsEnabled())
-            {
-                UpdateQuery(command);
-            }
-
-            return Task.FromResult(result);
+            return Task.FromResult(ReaderExecuting(command, eventData, result));
         }
 
         public override InterceptionResult<DbDataReader> ReaderExecuting(
@@ -43,7 +32,11 @@ namespace EFCore.TimeTraveler
         {
             if (IsEnabled())
             {
-                UpdateQuery(command);
+                var temporalTables = GetTemporalTables(eventData.Context.Model)
+                    ?? throw new InvalidOperationException(
+                        $"No temporal entities have been configured for {eventData.Context.GetType().Name}.  Please call `entityTypeBuilder.EnableTemporalQuery()` for each entity type that should participate in time travel.");
+
+                UpdateQuery(command, temporalTables);
             }
 
             return result;
@@ -51,10 +44,15 @@ namespace EFCore.TimeTraveler
 
         private bool IsEnabled()
         {
-            return TimeTravelDate != null && _temporalTables.Tables().Any();
+            return TimeTravelDate != null;
         }
 
-        private void UpdateQuery(DbCommand command)
+        private TemporalTables GetTemporalTables(IModel contextModel)
+        {
+            return contextModel[TemporalTablesKey] as TemporalTables;
+        }
+
+        private void UpdateQuery(DbCommand command, TemporalTables temporalTables)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "@TimeTravelDate";
@@ -62,7 +60,7 @@ namespace EFCore.TimeTraveler
 
             command.Parameters.Add(parameter);
 
-            foreach (var table in _temporalTables.Tables())
+            foreach (var table in temporalTables.Tables())
             {
                 command.CommandText =
                     command.CommandText.Replace(table, $"{table} FOR SYSTEM_TIME AS OF @TimeTravelDate");

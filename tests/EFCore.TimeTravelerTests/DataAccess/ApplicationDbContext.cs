@@ -78,13 +78,19 @@ namespace EFCore.TimeTravelerTests.DataAccess
             
             modelBuilder.Entity<WormWeapon>()
                 .EnableTemporalQuery();
-            
+
+            // If you do anything after calling your entities' .EnableTemporalQuery() that changes table names,
+            // then you must call EnableTemporalQuery() explicitly on the modelBuilder after this change.
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 // Use the entity name instead of the Context.DbSet<T> name
                 // refs https://docs.microsoft.com/en-us/ef/core/modeling/relational/tables#conventions
                 modelBuilder.Entity(entityType.ClrType).ToTable(entityType.ClrType.Name);
             }
+
+            modelBuilder.EnableTemporalQuery();
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

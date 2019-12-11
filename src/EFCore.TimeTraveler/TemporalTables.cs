@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace EFCore.TimeTraveler
 {
-    // TODO: Build this after the model is built based on the .EnableTemporalQuery() configuration
     public class TemporalTables
     {
-        private readonly List<string> _tables = new List<string>();
+        private readonly string[] _tables;
 
-        public void Add<T>(DbSet<T> table) where T : class
+        public TemporalTables(IEnumerable<string> tables)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Add(string tableName)
-        {
-            _tables.Add($"[{tableName}]");
+            _tables = tables.ToArray();
         }
 
         /// <summary>
-        /// Table names in square brackets
+        ///     Table names in square brackets
         /// </summary>
         /// <returns></returns>
         public IEnumerable<string> Tables()

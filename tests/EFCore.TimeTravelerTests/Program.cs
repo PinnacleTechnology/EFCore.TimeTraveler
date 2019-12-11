@@ -24,36 +24,9 @@ namespace EFCore.TimeTravelerTests
 
             await ScaffoldDb();
 
-            var appleId = Guid.NewGuid();
+            var (appleId, unripeAppleTime, ripeAppleTime, rottenAppleTime) = await SimulateLifecycleOfMyApple();
 
-            await SetInitialFruitStatus(appleId);
-
-            var unripeAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
-
-            await UpdateFruitStatus(appleId, FruitStatus.Ripe);
-
-            var ripeAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
-
-            await UpdateFruitStatus(appleId, FruitStatus.Rotten, new[] {"Moe"});
-
-            await GiveMoeFriendsAndWeapons(appleId);
-
-            var rottenAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
-
-            await UpdateFruitStatus(appleId, FruitStatus.Fuzzy, new[] {"Hairy", "Curly"});
-
-            await GiveHairyAndCurlyFriendsAndWeapons(appleId);
-
-            var fuzzyAppleTime = DateTime.UtcNow;
-
-            //using var assertionScope = new AssertionScope();
-
+            // Validate current state of my apple
             var currentApple = await GetApple(appleId);
 
             currentApple
@@ -94,9 +67,12 @@ namespace EFCore.TimeTravelerTests
                         }
                     }, options => options.ExcludingMissingMembers());
 
+            // Query the state of my apple a prior "system time" when the apple was rotten
             using (TemporalQuery.At(rottenAppleTime))
             {
-                (await GetApple(appleId))
+                var rottenApple = await GetApple(appleId);
+
+                rottenApple
                     .Should()
                     .BeEquivalentTo(new
                         {
@@ -122,48 +98,76 @@ namespace EFCore.TimeTravelerTests
             
             await Task.WhenAll(new[]
             {
-                AssertAtRipeAppleTime(ripeAppleTime, appleId),
-                AssertAtUnripeAppleTime(unripeAppleTime, appleId),
-                AssertAtRottenAppleTime(rottenAppleTime, appleId)
+                AssertWormlessFruitStatusAtTime(FruitStatus.Ripe, ripeAppleTime, appleId),
+                AssertWormlessFruitStatusAtTime(FruitStatus.Unripe, unripeAppleTime, appleId),
+                AssertWormsNavigationPropertyAtRottenAppleTime(rottenAppleTime, appleId)
             });
         }
 
-        private static async Task AssertAtRottenAppleTime(DateTime rottenAppleTime, Guid appleId)
+        private static async Task<(Guid appleId, DateTime unripeAppleTime, DateTime ripeAppleTime, DateTime rottenAppleTime)> SimulateLifecycleOfMyApple()
+        {
+            var appleId = Guid.NewGuid();
+
+            await SetInitialFruitStatus(appleId);
+
+            var unripeAppleTime = DateTime.UtcNow;
+
+            await AsTimePasses();
+
+            await UpdateFruitStatus(appleId, FruitStatus.Ripe);
+
+            var ripeAppleTime = DateTime.UtcNow;
+
+            await AsTimePasses();
+
+            await UpdateFruitStatus(appleId, FruitStatus.Rotten, new[] {"Moe"});
+
+            await GiveMoeFriendsAndWeapons(appleId);
+
+            var rottenAppleTime = DateTime.UtcNow;
+
+            await AsTimePasses();
+
+            await UpdateFruitStatus(appleId, FruitStatus.Fuzzy, new[] {"Hairy", "Curly"});
+
+            await GiveHairyAndCurlyFriendsAndWeapons(appleId);
+
+            return (appleId, unripeAppleTime, ripeAppleTime, rottenAppleTime);
+        }
+
+        private static async Task AssertWormsNavigationPropertyAtRottenAppleTime(DateTime rottenAppleTime, Guid appleId)
         {
             using (TemporalQuery.At(rottenAppleTime))
             {
                 using var localScope = _serviceProvider.CreateScope();
                 var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
+
                 var rottenAppleWorms = await context.Apples
                     .Where(a => a.Id == appleId)
-                    .Select(a => a.Worms)
+                    .SelectMany(a => a.Worms)
+                    .Include(worm => worm.Weapons)
                     .AsNoTracking().ToListAsync();
 
                 rottenAppleWorms
                     .Should()
-                    .BeEquivalentTo(new[] {new {Name = "Moe"}},
+                    .BeEquivalentTo(new[] {new
+                        {
+                            Name = "Moe",
+                            Weapons = new[] { new { Name = "Bazooka" } }
+                        } },
                         options => options.ExcludingMissingMembers());
             }
         }
 
-        private static async Task AssertAtUnripeAppleTime(DateTime unripeAppleTime, Guid appleId)
+        private static async Task AssertWormlessFruitStatusAtTime(FruitStatus expectedFruitStatus, DateTime appleTime, Guid appleId)
         {
-            using (TemporalQuery.At(unripeAppleTime))
+            using (TemporalQuery.At(appleTime))
             {
-                (await GetApple(appleId))
-                    .Should()
-                    .BeEquivalentTo(new {FruitStatus = FruitStatus.Unripe, Worms = Array.Empty<Worm>()},
-                        options => options.ExcludingMissingMembers());
-            }
-        }
+                var apple = await GetApple(appleId);
 
-        private static async Task AssertAtRipeAppleTime(DateTime ripeAppleTime, Guid appleId)
-        {
-            using (TemporalQuery.At(ripeAppleTime))
-            {
-                (await GetApple(appleId))
+                apple
                     .Should()
-                    .BeEquivalentTo(new {FruitStatus = FruitStatus.Ripe, Worms = Array.Empty<Worm>()},
+                    .BeEquivalentTo(new {FruitStatus = expectedFruitStatus, Worms = Array.Empty<Worm>()},
                         options => options.ExcludingMissingMembers());
             }
         }
@@ -262,20 +266,35 @@ namespace EFCore.TimeTravelerTests
                 .SingleAsync();
         }
 
-
-        private static async Task AsTimePasses()
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(150));
-        }
-
-        private static async Task ScaffoldDb()
+        private static async Task SetInitialFruitStatus(Guid appleId)
         {
             using var localScope = _serviceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
-            await context.Database.EnsureDeletedAsync();
-            await context.Database.MigrateAsync();
+            var myApple = new Apple { Id = appleId, FruitStatus = FruitStatus.Unripe };
+            context.Apples.Add(myApple);
+
+            await context.SaveChangesAsync();
+        }
+
+        private static async Task UpdateFruitStatus(Guid appleId, FruitStatus fruitStatus, string[] worms = null)
+        {
+            using var localScope = _serviceProvider.CreateScope();
+            worms ??= Array.Empty<string>();
+            var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
+            var myApple = await context.Apples.Where(a => a.Id == appleId).SingleAsync();
+
+            myApple.FruitStatus = fruitStatus;
+            myApple.Worms.AddRange(worms.Select(wormName => new Worm { Name = wormName }));
+
+            await context.SaveChangesAsync();
+        }
+
+
+        private static async Task AsTimePasses()
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(150));
         }
 
         private static void Configure()
@@ -289,30 +308,15 @@ namespace EFCore.TimeTravelerTests
             var appContainer = builder.Build();
             _serviceProvider = new AutofacServiceProvider(appContainer);
         }
-
-        private static async Task UpdateFruitStatus(Guid appleId, FruitStatus fruitStatus, string[] worms = null)
-        {
-            using var localScope = _serviceProvider.CreateScope();
-            worms ??= Array.Empty<string>();
-            var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
-            var myApple = await context.Apples.Where(a => a.Id == appleId).SingleAsync();
-
-            myApple.FruitStatus = fruitStatus;
-            myApple.Worms.AddRange(worms.Select(wormName => new Worm {Name = wormName}));
-
-            await context.SaveChangesAsync();
-        }
-
-        private static async Task SetInitialFruitStatus(Guid appleId)
+        
+        private static async Task ScaffoldDb()
         {
             using var localScope = _serviceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
-            var myApple = new Apple {Id = appleId, FruitStatus = FruitStatus.Unripe};
-            context.Apples.Add(myApple);
-
-            await context.SaveChangesAsync();
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.MigrateAsync();
         }
     }
 }
