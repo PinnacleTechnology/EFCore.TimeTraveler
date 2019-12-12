@@ -5,7 +5,7 @@
     <Authors>Ben Brandt</Authors>
     <Copyright>Copyright 2019 Ben Brandt</Copyright>
     <PackageTags>Temporal Tables TemporalTables Entity Framework Core entity-framework-core EntityFrameworkCore EFCore EntityFramework EF SQL Server SQLServer sql-server TimeTravel</PackageTags>
-    <Version>0.25.0</Version>
+    <Version>0.25.1</Version>
     <PackageReleaseNotes>v0.25.0 - Initial Release
 </PackageReleaseNotes>
     <Description>Allow full-featured Entity Framwork Core queries against SQL Server Temporal Tables.
