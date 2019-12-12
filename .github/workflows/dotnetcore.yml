@@ -31,7 +31,7 @@ jobs:
     - name: Find Current Directory
       run: |
         echo $PWD
-        ls
+        ls -R
       shell: bash
 
     - name: Push generated package to GitHub registry
