@@ -346,3 +346,4 @@ tempkey.rsa
 
 local-nuget.config
 
+**/lib/netstandard*/
