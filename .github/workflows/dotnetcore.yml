@@ -1,0 +1,25 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Build with dotnet
+      run: dotnet build --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
+      shell: bash
+    - name: Publish nuget
+      run: |
+           for f in ./artifacts/*.nupkg
+           do
+             curl -vX PUT -u "bbrandt:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/VantageSoftware/
+           done
+      shell: bash
