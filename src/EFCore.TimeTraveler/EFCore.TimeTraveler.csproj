@@ -1,6 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Ben Brandt</Authors>
+    <Copyright>Copyright 2019 Ben Brandt</Copyright>
+    <PackageTags>Temporal Tables TemporalTables Entity Framework Core entity-framework-core EntityFrameworkCore EFCore EntityFramework EF SQL Server SQLServer sql-server TimeTravel</PackageTags>
+    <Version>0.25.0</Version>
+    <PackageReleaseNotes>v0.25.0 - Initial Release
+</PackageReleaseNotes>
+    <Description>Allow full-featured Entity Framwork Core queries against SQL Server Temporal Tables.
+* https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15
+* https://github.com/aspnet/EntityFrameworkCore/issues/4693</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
