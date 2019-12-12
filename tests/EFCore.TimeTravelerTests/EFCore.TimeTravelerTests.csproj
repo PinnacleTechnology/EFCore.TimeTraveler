@@ -30,11 +30,14 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.TimeTraveler\EFCore.TimeTraveler.csproj" />
+    <ProjectReference Include="..\Respawn\Respawn.csproj" />
   </ItemGroup>
 
 </Project>

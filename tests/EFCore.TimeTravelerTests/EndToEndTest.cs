@@ -11,19 +11,27 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 
 namespace EFCore.TimeTravelerTests
 {
-    internal class Program
+    /// <summary>
+    /// One large end-to-end test
+    /// </summary>
+    [TestFixture]
+    internal class EndToEndTest
     {
-        private static AutofacServiceProvider _serviceProvider;
+        private static AutofacServiceProvider ServiceProvider => DatabaseSetupFixture.ServiceProvider;
 
-        private static async Task Main(string[] args)
+        [SetUp]
+        public async Task ResetDb()
         {
-            Configure();
+            await DatabaseSetupFixture.ResetDb();
+        }
 
-            await ScaffoldDb();
-
+        [Test]
+        public async Task TemporalQuery_Should_AllowAllTemporalEntitiesToTimeTravel()
+        {
             var (appleId, unripeAppleTime, ripeAppleTime, rottenAppleTime) = await SimulateLifecycleOfMyApple();
 
             // Validate current state of my apple
@@ -139,7 +147,7 @@ namespace EFCore.TimeTravelerTests
         {
             using (TemporalQuery.At(rottenAppleTime))
             {
-                using var localScope = _serviceProvider.CreateScope();
+                using var localScope = ServiceProvider.CreateScope();
                 var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
                 var rottenAppleWorms = await context.Apples
@@ -174,7 +182,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task GiveMoeFriendsAndWeapons(Guid appleId)
         {
-            using var localScope = _serviceProvider.CreateScope();
+            using var localScope = ServiceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
@@ -204,7 +212,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task GiveHairyAndCurlyFriendsAndWeapons(Guid appleId)
         {
-            using var localScope = _serviceProvider.CreateScope();
+            using var localScope = ServiceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
@@ -246,7 +254,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task<Apple> GetApple(Guid appleId)
         {
-            using var localScope = _serviceProvider.CreateScope();
+            using var localScope = ServiceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
@@ -268,7 +276,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task SetInitialFruitStatus(Guid appleId)
         {
-            using var localScope = _serviceProvider.CreateScope();
+            using var localScope = ServiceProvider.CreateScope();
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
@@ -280,7 +288,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task UpdateFruitStatus(Guid appleId, FruitStatus fruitStatus, string[] worms = null)
         {
-            using var localScope = _serviceProvider.CreateScope();
+            using var localScope = ServiceProvider.CreateScope();
             worms ??= Array.Empty<string>();
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
             var myApple = await context.Apples.Where(a => a.Id == appleId).SingleAsync();
@@ -295,28 +303,6 @@ namespace EFCore.TimeTravelerTests
         private static async Task AsTimePasses()
         {
             await Task.Delay(TimeSpan.FromMilliseconds(150));
-        }
-
-        private static void Configure()
-        {
-            var services = new ServiceCollection();
-            var builder = new ContainerBuilder();
-
-            services.AddDbContext<ApplicationDbContext>();
-
-            builder.Populate(services);
-            var appContainer = builder.Build();
-            _serviceProvider = new AutofacServiceProvider(appContainer);
-        }
-        
-        private static async Task ScaffoldDb()
-        {
-            using var localScope = _serviceProvider.CreateScope();
-
-            var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
-
-            await context.Database.EnsureDeletedAsync();
-            await context.Database.MigrateAsync();
         }
     }
 }

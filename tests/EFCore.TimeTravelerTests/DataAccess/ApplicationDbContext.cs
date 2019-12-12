@@ -6,10 +6,6 @@ namespace EFCore.TimeTravelerTests.DataAccess
 {
     class ApplicationDbContext : DbContext
     {
-        //TODO: Hardcoded = bad
-        private const string ConnectionString = @"Server=localhost\SQLEXPRESS;Database=EFCoreTimeTravelerTests;Trusted_Connection=True;ConnectRetryCount=0";
-
-
         public ApplicationDbContext()
         {
             
@@ -28,7 +24,7 @@ namespace EFCore.TimeTravelerTests.DataAccess
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(ConnectionString)
+            optionsBuilder.UseSqlServer(DatabaseSetupFixture.ConnectionString)
                 .UseLoggerFactory(MyLoggerFactory) // Warning: Do not create a new ILoggerFactory instance each time
                 .AddInterceptors(new TimeTravelInterceptor());
 
