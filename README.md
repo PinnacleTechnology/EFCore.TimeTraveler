@@ -1,7 +1,7 @@
 # EFCore.TimeTraveler
 v0.25 - Alpha
 
-Allow full-featured Entity Framwork Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).
+Allow full-featured Entity Framework Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).
 
 ## Background
 EF Core does not natively support temporal tables.  You may query a single temporal table using [`.FromSqlRaw(...)`](https://docs.microsoft.com/en-us/ef/core/querying/raw-sql) or `.FromSqlInterpolated(...)`.  Multiple temporal tables can be queried using the same raw SQL functionality with LINQ Join.  Additionally, the [EfCoreTemporalTable](https://www.nuget.org/packages/EfCoreTemporalTable/) library provides a nice syntax for this functionality.
