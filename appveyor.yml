@@ -4,6 +4,8 @@ pull_requests:
 image: Visual Studio 2019
 services:
   - mssql2017
+before_build:
+- ps: nuget restore
 nuget:
   disable_publish_on_pr: true
 artifacts:
