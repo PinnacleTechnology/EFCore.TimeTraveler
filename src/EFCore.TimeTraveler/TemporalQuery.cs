@@ -11,7 +11,7 @@ namespace EFCore.TimeTraveler
         private static ImmutableStack<Context> CurrentContext => ContextStack.Value ?? ImmutableStack<Context>.Empty;
 
 
-        public static IDisposable At(DateTime targetDateTime)
+        public static IDisposable AsOf(DateTime targetDateTime)
         {
             var stack = CurrentContext;
             var bookmark = new ContextStackBookmark(stack);

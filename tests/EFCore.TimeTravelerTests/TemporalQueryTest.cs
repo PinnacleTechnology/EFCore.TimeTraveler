@@ -64,7 +64,7 @@ namespace EFCore.TimeTravelerTests
             var currentApple = await context.Apples.AsNoTracking().SingleAsync(a => a.Id == appleId);
             currentApple.FruitStatus.Should().Be(FruitStatus.Rotten);
 
-            using (TemporalQuery.At(ripeAppleTime))
+            using (TemporalQuery.AsOf(ripeAppleTime))
             {
                 var timeTravelApple = await context.Apples.AsNoTracking().SingleAsync(a => a.Id == appleId);
                 timeTravelApple.FruitStatus.Should().Be(FruitStatus.Ripe);

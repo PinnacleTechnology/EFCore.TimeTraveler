@@ -1,5 +1,5 @@
 # EFCore.TimeTraveler
-v0.25 - Alpha
+v0.26 - Alpha - Prototype
 
 Allow full-featured Entity Framework Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).
 

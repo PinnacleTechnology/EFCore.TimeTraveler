@@ -76,7 +76,7 @@ namespace EFCore.TimeTravelerTests
                     }, options => options.ExcludingMissingMembers());
 
             // Query the state of my apple a prior "system time" when the apple was rotten
-            using (TemporalQuery.At(rottenAppleTime))
+            using (TemporalQuery.AsOf(rottenAppleTime))
             {
                 var rottenApple = await GetApple(appleId);
 
@@ -145,7 +145,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task AssertWormsNavigationPropertyAtRottenAppleTime(DateTime rottenAppleTime, Guid appleId)
         {
-            using (TemporalQuery.At(rottenAppleTime))
+            using (TemporalQuery.AsOf(rottenAppleTime))
             {
                 using var localScope = ServiceProvider.CreateScope();
                 var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
@@ -169,7 +169,7 @@ namespace EFCore.TimeTravelerTests
 
         private static async Task AssertWormlessFruitStatusAtTime(FruitStatus expectedFruitStatus, DateTime appleTime, Guid appleId)
         {
-            using (TemporalQuery.At(appleTime))
+            using (TemporalQuery.AsOf(appleTime))
             {
                 var apple = await GetApple(appleId);
 
