@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
@@ -14,53 +16,29 @@ namespace EFCore.TimeTravelerTests
     [TestFixture]
     public class TemporalQueryTest
     {
-        private static AutofacServiceProvider ServiceProvider => DatabaseSetupFixture.ServiceProvider;
+        private static AutofacServiceProvider ServiceProvider => TestHelper.ServiceProvider;
 
         [SetUp]
-        public async Task ResetDb()
-        {
-            await DatabaseSetupFixture.ResetDb();
-        }
+        public async Task ResetDb() => await TestHelper.ResetDb();
 
-
-
-
-        [Test]
-        public async Task Respawn_ResetDb_Should_ClearAppleTemporalTable()
-        {
-            var context = GetNewDbContext();
-            var appleId = Guid.Parse("00000001-8803-4263-ada6-cd12a33d8872");
-
-            context.Apples.Add(new Apple {Id = appleId, FruitStatus = FruitStatus.Ripe});
-
-            await context.SaveChangesAsync();
-
-            context = GetNewDbContext();
-
-            context.Apples.Count(a => a.Id == appleId).Should().Be(1);
-
-            await ResetDb();
-
-            context.Apples.Count(a => a.Id == appleId).Should().Be(0);
-        }
 
         [Test]
         public async Task Given_SingleEntity_Should_TimeTravel()
         {
-            var context = GetNewDbContext();
+            var context = TestHelper.GetNewDbContext();
             var appleId = Guid.Parse("00000002-8803-4263-ada6-cd12a33d8872");
 
             context.Apples.Add(new Apple { Id = appleId, FruitStatus = FruitStatus.Ripe });
             await context.SaveChangesAsync();
 
-            var ripeAppleTime = DateTime.UtcNow;
+            var ripeAppleTime = TestHelper.UtcNow;
 
-            context = GetNewDbContext();
+            context = TestHelper.GetNewDbContext();
             var ripeApple = await context.Apples.SingleAsync(a => a.Id == appleId);
             ripeApple.FruitStatus = FruitStatus.Rotten;
             await context.SaveChangesAsync();
 
-            context = GetNewDbContext();
+            context = TestHelper.GetNewDbContext();
             var currentApple = await context.Apples.AsNoTracking().SingleAsync(a => a.Id == appleId);
             currentApple.FruitStatus.Should().Be(FruitStatus.Rotten);
 
@@ -71,9 +49,51 @@ namespace EFCore.TimeTravelerTests
             }
         }
 
-        private static ApplicationDbContext GetNewDbContext()
+
+
+        [Test]
+        public async Task Given_IncludedCollection_Should_TimeTravelIncludedCollection()
         {
-            return ServiceProvider.GetService<ApplicationDbContext>();
+            var context = TestHelper.GetNewDbContext();
+            var appleId = Guid.Parse("00000003-8803-4263-ada6-cd12a33d8872");
+
+            var apple = new Apple {Id = appleId, FruitStatus = FruitStatus.Rotten};
+            apple.AddWorm("Gav");
+            context.Apples.Add(apple);
+
+            await context.SaveChangesAsync();
+
+            var rottenAppleTime = TestHelper.UtcNow;
+
+            context = TestHelper.GetNewDbContext();
+
+            apple = await context.Apples.SingleAsync(a => a.Id == appleId);
+            apple.AddWorm("G-Dog");
+            apple.AddWorm("Gavin' A Laugh");
+
+            await context.SaveChangesAsync();
+
+            context = TestHelper.GetNewDbContext();
+
+            var currentApple = await context.Apples
+                .Include(a => a.Worms)
+                .SingleAsync(a => a.Id == appleId);
+
+            currentApple.Worms.Count.Should().Be(3);
+
+            using (TemporalQuery.AsOf(rottenAppleTime))
+            {
+                // Let's use the same context for time travel
+                var timeTravelApple = await context.Apples
+                    .Include(a => a.Worms)
+                    // All temporal queries must be .AsNoTracking()
+                    .AsNoTracking()
+                    .SingleAsync(a => a.Id == appleId);
+
+                timeTravelApple.Worms.Count.Should().Be(1);
+            }
         }
+
+
     }
 }

@@ -118,23 +118,17 @@ namespace EFCore.TimeTravelerTests
 
             await SetInitialFruitStatus(appleId);
 
-            var unripeAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
+            var unripeAppleTime = TestHelper.UtcNow;
 
             await UpdateFruitStatus(appleId, FruitStatus.Ripe);
 
-            var ripeAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
+            var ripeAppleTime = TestHelper.UtcNow;
 
             await UpdateFruitStatus(appleId, FruitStatus.Rotten, new[] {"Moe"});
 
             await GiveMoeFriendsAndWeapons(appleId);
 
-            var rottenAppleTime = DateTime.UtcNow;
-
-            await AsTimePasses();
+            var rottenAppleTime = TestHelper.UtcNow;
 
             await UpdateFruitStatus(appleId, FruitStatus.Fuzzy, new[] {"Hairy", "Curly"});
 
@@ -297,12 +291,6 @@ namespace EFCore.TimeTravelerTests
             myApple.Worms.AddRange(worms.Select(wormName => new Worm { Name = wormName }));
 
             await context.SaveChangesAsync();
-        }
-
-
-        private static async Task AsTimePasses()
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(150));
         }
     }
 }
