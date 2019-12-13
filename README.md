@@ -55,7 +55,7 @@ However, any related data from `Include(...)` or navigation properties is not ab
 ```
 
 ### More Complicated Example
-See [/tests/EFCore.TimeTravelerTests/Program.cs](/tests/EFCore.TimeTravelerTests/Program.cs)
+See [/tests/EFCore.TimeTravelerTests/EndToEndTest.cs](/tests/EFCore.TimeTravelerTests/EndToEndTest.cs)
 #### Complicated LINQ Query
 ```csharp
     return await context.Apples
