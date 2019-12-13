@@ -28,12 +28,7 @@ jobs:
     - name: Add private GitHub registry to NuGet
       run: nuget sources add -name "GPR" -Source https://nuget.pkg.github.com/VantageSoftware/index.json -Username VantageSoftware -Password ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Find Current Directory
-      run: |
-        echo $PWD
-        ls -R
-      shell: bash
-
     - name: Push generated package to GitHub registry
       run: nuget push **/*.nupkg -Source "GPR" -SkipDuplicate -Verbosity detailed
+      continue-on-error: true
       shell: bash
