@@ -1,5 +1,8 @@
 # EFCore.TimeTraveler
-v0.26 - Alpha - Prototype
+| --- | --- |
+| **Build** | [![Actions Status](https://github.com/VantageSoftware/EFCore.TimeTraveler/workflows/dotnetcore/badge.svg)](https://github.com/VantageSoftware/EFCore.TimeTraveler/actions) |
+| **NuGet** | [![nuget](https://img.shields.io/nuget/v/EFCore.TimeTraveler)](https://www.nuget.org/packages/EFCore.TimeTraveler/)
+
 
 Allow full-featured Entity Framework Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).
 
