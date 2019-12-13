@@ -1,6 +1,9 @@
-name: .NET Core
+name: dotnetcore
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -16,13 +19,13 @@ jobs:
         dotnet-version: 3.1.100
 
     - name: Build with dotnet
-      run: dotnet build --configuration Release --version-suffix prerelease-$(date +%Y%m%d%H%M%S)
+      run: dotnet build --configuration Release
       shell: bash
 
     - name: Install NuGet client
       uses: nuget/setup-nuget@v1
       with:
-        nuget-api-key: ${{ secrets.NuGetAPIKey }}
+        nuget-api-key: ${{ secrets.NUGET_API_KEY }}
         nuget-version: '5.4'
 
     - name: Add private GitHub registry to NuGet
@@ -34,6 +37,6 @@ jobs:
       shell: bash
 
     - name: Push to nuget.org (Will only succeed when version number manually updated)
-      run:  nuget push **/*.nupkg -apiKey  {{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json -SkipDuplicate
+      run:  nuget push **/*.nupkg -Source https://api.nuget.org/v3/index.json -SkipDuplicate
       continue-on-error: true
       shell: bash
