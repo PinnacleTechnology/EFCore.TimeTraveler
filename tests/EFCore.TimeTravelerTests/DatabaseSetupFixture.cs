@@ -28,7 +28,7 @@ namespace EFCore.TimeTravelerTests
 
                 if (isAppVeyor)
                 {
-                    return @"Server=(local)\SQL2017;Database=tempdb;User ID=sa;Password=Password12!";
+                    return @"Server=(local)\SQL2017;Database=EFCoreTimeTravelerTests;User ID=sa;Password=Password12!";
                 }
 
                 if (!string.IsNullOrWhiteSpace(connectionStringFromRunSettings))
