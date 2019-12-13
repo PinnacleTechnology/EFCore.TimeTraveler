@@ -42,7 +42,7 @@ However, any related data from `Include(...)` or navigation properties is not ab
 
     appleCurrentState.Worms.Count().Should().Be(3);
 
-    using (TemporalQuery.At(ripeAppleTime))
+    using (TemporalQuery.AsOf(ripeAppleTime))
     {
         var applePriorState = await context.Apples
             .Include(apple => apple.Worms)
