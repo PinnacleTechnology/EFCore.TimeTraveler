@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
-using Autofac.Extensions.DependencyInjection;
 using EFCore.TimeTraveler;
-using EFCore.TimeTravelerTests.DataAccess;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 namespace EFCore.TimeTravelerTests
@@ -16,8 +10,6 @@ namespace EFCore.TimeTravelerTests
     [TestFixture]
     public class TemporalQueryTest
     {
-        private static AutofacServiceProvider ServiceProvider => TestHelper.ServiceProvider;
-
         [SetUp]
         public async Task ResetDb() => await TestHelper.ResetDb();
 
@@ -48,9 +40,7 @@ namespace EFCore.TimeTravelerTests
                 timeTravelApple.FruitStatus.Should().Be(FruitStatus.Ripe);
             }
         }
-
-
-
+        
         [Test]
         public async Task Given_IncludedCollection_Should_TimeTravelIncludedCollection()
         {

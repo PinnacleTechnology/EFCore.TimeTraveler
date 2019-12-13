@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using EFCore.TimeTravelerTests.DataAccess;
@@ -12,14 +13,32 @@ namespace EFCore.TimeTravelerTests
     [SetUpFixture]
     public class DatabaseSetupFixture
     {
-        //TODO: Hardcoded = bad
-        public static readonly string ConnectionString =
-            @"Server=localhost\SQLEXPRESS;Database=EFCoreTimeTravelerTests;Trusted_Connection=True;ConnectRetryCount=0";
-
         public static AutofacServiceProvider ServiceProvider
         {
             get;
             private set;
+        }
+
+        public static string ConnectionString
+        {
+            get
+            {
+                var isAppVeyor = Environment.GetEnvironmentVariable("Appveyor")?.ToUpperInvariant() == "TRUE";
+                var connectionStringFromRunSettings = TestContext.Parameters["TestConnectionString"];
+
+                if (isAppVeyor)
+                {
+                    return @"Server=(local)\SQL2017;Database=tempdb;User ID=sa;Password=Password12!";
+                }
+
+                if (!string.IsNullOrWhiteSpace(connectionStringFromRunSettings))
+                {
+                    return connectionStringFromRunSettings;
+                }
+
+                return
+                    @"Server=localhost\SQLEXPRESS;Database=EFCoreTimeTravelerTests;Trusted_Connection=True;ConnectRetryCount=0";
+            }
         }
 
         public static async Task ResetDb()
@@ -40,6 +59,7 @@ namespace EFCore.TimeTravelerTests
         {
             var services = new ServiceCollection();
             var builder = new ContainerBuilder();
+
 
             services.AddDbContext<ApplicationDbContext>();
 

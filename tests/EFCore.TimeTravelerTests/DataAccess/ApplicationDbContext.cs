@@ -1,5 +1,4 @@
 ﻿using EFCore.TimeTraveler;
-using EFCore.TimeTravelerTests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +8,6 @@ namespace EFCore.TimeTravelerTests.DataAccess
     {
         public ApplicationDbContext()
         {
-            
         }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> contextOptions)

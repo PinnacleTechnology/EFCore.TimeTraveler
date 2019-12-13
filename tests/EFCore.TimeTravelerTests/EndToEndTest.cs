@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using EFCore.TimeTraveler;
 using EFCore.TimeTravelerTests.DataAccess;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -16,103 +12,22 @@ using NUnit.Framework;
 namespace EFCore.TimeTravelerTests
 {
     /// <summary>
-    /// One large end-to-end test
+    ///     One large end-to-end test
     /// </summary>
     [TestFixture]
     internal class EndToEndTest
     {
-        private static AutofacServiceProvider ServiceProvider => DatabaseSetupFixture.ServiceProvider;
-
         [SetUp]
         public async Task ResetDb()
         {
             await DatabaseSetupFixture.ResetDb();
         }
 
-        [Test]
-        public async Task TemporalQuery_Should_AllowAllTemporalEntitiesToTimeTravel()
-        {
-            var (appleId, unripeAppleTime, ripeAppleTime, rottenAppleTime) = await SimulateLifecycleOfMyApple();
+        private static AutofacServiceProvider ServiceProvider => DatabaseSetupFixture.ServiceProvider;
 
-            // Validate current state of my apple
-            var currentApple = await GetApple(appleId);
-
-            currentApple
-                .Should()
-                .BeEquivalentTo(
-                    new
-                    {
-                        FruitStatus = FruitStatus.Fuzzy,
-                        Worms = new object[]
-                        {
-                            new 
-                            {
-                                Name = "Hairy",
-                                Weapons = new []
-                                {
-                                    new {Name = "Holy Hand Grenade"},
-                                    new {Name = "Super Banana Bomb"}
-                                },
-                                FriendsNames = new []
-                                {
-                                    "Joan",
-                                    "Starr",
-                                    "Curly"
-                                }
-
-                            },
-                            new {Name = "Curly"},
-                            new 
-                            {
-                                Name = "Moe",
-                                Weapons = new [] {new {Name = "Bazooka Pie" } },
-                                FriendsNames = new []
-                                {
-                                    "John",
-                                }
-
-                            }
-                        }
-                    }, options => options.ExcludingMissingMembers());
-
-            // Query the state of my apple a prior "system time" when the apple was rotten
-            using (TemporalQuery.AsOf(rottenAppleTime))
-            {
-                var rottenApple = await GetApple(appleId);
-
-                rottenApple
-                    .Should()
-                    .BeEquivalentTo(new
-                        {
-                            FruitStatus = FruitStatus.Rotten,
-                            Worms = new object[]
-                            {
-                                new
-                                {
-                                    Name = "Moe",
-                                    Weapons = new [] {new {Name = "Bazooka" } },
-                                    FriendsNames = new []
-                                    {
-                                        "John",
-                                        "Ringo"
-                                    }
-
-                                }
-                            }
-                        },
-                        options => options.ExcludingMissingMembers());
-            }
-
-            
-            await Task.WhenAll(new[]
-            {
-                AssertWormlessFruitStatusAtTime(FruitStatus.Ripe, ripeAppleTime, appleId),
-                AssertWormlessFruitStatusAtTime(FruitStatus.Unripe, unripeAppleTime, appleId),
-                AssertWormsNavigationPropertyAtRottenAppleTime(rottenAppleTime, appleId)
-            });
-        }
-
-        private static async Task<(Guid appleId, DateTime unripeAppleTime, DateTime ripeAppleTime, DateTime rottenAppleTime)> SimulateLifecycleOfMyApple()
+        private static async
+            Task<(Guid appleId, DateTime unripeAppleTime, DateTime ripeAppleTime, DateTime rottenAppleTime)>
+            SimulateLifecycleOfMyApple()
         {
             var appleId = Guid.NewGuid();
 
@@ -152,16 +67,15 @@ namespace EFCore.TimeTravelerTests
 
                 rottenAppleWorms
                     .Should()
-                    .BeEquivalentTo(new[] {new
-                        {
-                            Name = "Moe",
-                            Weapons = new[] { new { Name = "Bazooka" } }
-                        } },
+                    .BeEquivalentTo(new[] {new {Name = "Moe", Weapons = new[] {new {Name = "Bazooka"}}}},
                         options => options.ExcludingMissingMembers());
             }
         }
 
-        private static async Task AssertWormlessFruitStatusAtTime(FruitStatus expectedFruitStatus, DateTime appleTime, Guid appleId)
+        private static async Task AssertWormlessFruitStatusAtTime(
+            FruitStatus expectedFruitStatus,
+            DateTime appleTime,
+            Guid appleId)
         {
             using (TemporalQuery.AsOf(appleTime))
             {
@@ -274,7 +188,7 @@ namespace EFCore.TimeTravelerTests
 
             var context = localScope.ServiceProvider.GetService<ApplicationDbContext>();
 
-            var myApple = new Apple { Id = appleId, FruitStatus = FruitStatus.Unripe };
+            var myApple = new Apple {Id = appleId, FruitStatus = FruitStatus.Unripe};
             context.Apples.Add(myApple);
 
             await context.SaveChangesAsync();
@@ -288,9 +202,77 @@ namespace EFCore.TimeTravelerTests
             var myApple = await context.Apples.Where(a => a.Id == appleId).SingleAsync();
 
             myApple.FruitStatus = fruitStatus;
-            myApple.Worms.AddRange(worms.Select(wormName => new Worm { Name = wormName }));
+            myApple.Worms.AddRange(worms.Select(wormName => new Worm {Name = wormName}));
 
             await context.SaveChangesAsync();
+        }
+
+        [Test]
+        public async Task TemporalQuery_Should_AllowAllTemporalEntitiesToTimeTravel()
+        {
+            var (appleId, unripeAppleTime, ripeAppleTime, rottenAppleTime) = await SimulateLifecycleOfMyApple();
+
+            // Validate current state of my apple
+            var currentApple = await GetApple(appleId);
+
+            currentApple
+                .Should()
+                .BeEquivalentTo(
+                    new
+                    {
+                        FruitStatus = FruitStatus.Fuzzy,
+                        Worms = new object[]
+                        {
+                            new
+                            {
+                                Name = "Hairy",
+                                Weapons = new[]
+                                {
+                                    new {Name = "Holy Hand Grenade"}, new {Name = "Super Banana Bomb"}
+                                },
+                                FriendsNames = new[] {"Joan", "Starr", "Curly"}
+                            },
+                            new {Name = "Curly"},
+                            new
+                            {
+                                Name = "Moe",
+                                Weapons = new[] {new {Name = "Bazooka Pie"}},
+                                FriendsNames = new[] {"John"}
+                            }
+                        }
+                    }, options => options.ExcludingMissingMembers());
+
+            // Query the state of my apple a prior "system time" when the apple was rotten
+            using (TemporalQuery.AsOf(rottenAppleTime))
+            {
+                var rottenApple = await GetApple(appleId);
+
+                rottenApple
+                    .Should()
+                    .BeEquivalentTo(
+                        new
+                        {
+                            FruitStatus = FruitStatus.Rotten,
+                            Worms = new object[]
+                            {
+                                new
+                                {
+                                    Name = "Moe",
+                                    Weapons = new[] {new {Name = "Bazooka"}},
+                                    FriendsNames = new[] {"John", "Ringo"}
+                                }
+                            }
+                        },
+                        options => options.ExcludingMissingMembers());
+            }
+
+
+            await Task.WhenAll(new[]
+            {
+                AssertWormlessFruitStatusAtTime(FruitStatus.Ripe, ripeAppleTime, appleId),
+                AssertWormlessFruitStatusAtTime(FruitStatus.Unripe, unripeAppleTime, appleId),
+                AssertWormsNavigationPropertyAtRottenAppleTime(rottenAppleTime, appleId)
+            });
         }
     }
 }
