@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using EFCore.TimeTraveler;
 using EFCore.TimeTravelerTests.DataAccess;
+using EFCore.TimeTravelerTests.Entities;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

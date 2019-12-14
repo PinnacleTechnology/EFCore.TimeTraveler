@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace EFCore.TimeTravelerTests
+namespace EFCore.TimeTravelerTests.Entities
 {
     public class WormWeapon
     {

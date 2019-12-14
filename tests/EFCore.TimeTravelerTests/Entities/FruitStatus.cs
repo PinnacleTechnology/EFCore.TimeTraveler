@@ -1,4 +1,4 @@
-﻿namespace EFCore.TimeTravelerTests
+﻿namespace EFCore.TimeTravelerTests.Entities
 {
     public enum FruitStatus
     {

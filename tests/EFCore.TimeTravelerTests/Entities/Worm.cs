@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Humanizer;
 
-namespace EFCore.TimeTravelerTests
+namespace EFCore.TimeTravelerTests.Entities
 {
     public class Worm
     {

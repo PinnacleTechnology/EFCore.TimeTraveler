@@ -1,4 +1,5 @@
 ﻿using EFCore.TimeTraveler;
+using EFCore.TimeTravelerTests.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

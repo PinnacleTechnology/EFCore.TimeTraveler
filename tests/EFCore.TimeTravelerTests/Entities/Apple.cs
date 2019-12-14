@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EFCore.TimeTravelerTests
+namespace EFCore.TimeTravelerTests.Entities
 {
     public class Apple
     {

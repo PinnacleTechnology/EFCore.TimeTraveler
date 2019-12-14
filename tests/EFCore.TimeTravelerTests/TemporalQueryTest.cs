@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using EFCore.TimeTraveler;
+using EFCore.TimeTravelerTests.Entities;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
