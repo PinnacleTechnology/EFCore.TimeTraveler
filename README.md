@@ -11,7 +11,7 @@ Allow full-featured Entity Framework Core queries against SQL Server [Temporal T
 ## Background
 EF Core [does not natively support](https://github.com/aspnet/EntityFrameworkCore/issues/4693) querying from the history of temporal tables.  You may query a single temporal table using [`.FromSqlRaw(...)`](https://docs.microsoft.com/en-us/ef/core/querying/raw-sql) or `.FromSqlInterpolated(...)`.  Multiple temporal tables can be queried using the same raw SQL functionality with LINQ Join.  Additionally, the [EfCoreTemporalTable](https://www.nuget.org/packages/EfCoreTemporalTable/) library provides a nice syntax for this functionality.
 
-However, any related data from `Include(...)` or navigation properties is not able to be queried from temporal history with EF Core.  In my current project, we are using these features of EF Core to write clear and concise LINQ queries and projections of object graphs for models.  We now have a requirement
+However, any related data from `Include(...)` or navigation properties is not able to be queried from temporal history with EF Core.  The problem I am trying to solve is that I have a good amount of LINQ queries and other code written and tested, but now a requirement has come in requiring loading the same set of data at a prior System Time.  The [Point-in-time analysis (time travel)](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-table-usage-scenarios?view=sql-server-ver15#point-in-time-analysis-time-travel) usage scenario for SQL Server Temporal Tables pretty well described what I am wanting to do.  
 
 ## Prerequisites
 * EF Core 3.1 (Supports .NETStandard 2.0)
