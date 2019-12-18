@@ -6,7 +6,7 @@
 | **NuGet** | [![nuget](https://img.shields.io/nuget/v/EFCore.TimeTraveler)](https://www.nuget.org/packages/EFCore.TimeTraveler/) |
 
 
-Allow full-featured Entity Framework Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).
+Allow full-featured Entity Framework Core queries against SQL Server [Temporal Tables](https://docs.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables?view=sql-server-ver15).  
 
 ## Background
 EF Core [does not natively support](https://github.com/aspnet/EntityFrameworkCore/issues/4693) querying from the history of temporal tables.  You may query a single temporal table using [`.FromSqlRaw(...)`](https://docs.microsoft.com/en-us/ef/core/querying/raw-sql) or `.FromSqlInterpolated(...)`.  Multiple temporal tables can be queried using the same raw SQL functionality with LINQ Join.  Additionally, the [EfCoreTemporalTable](https://www.nuget.org/packages/EfCoreTemporalTable/) library provides a nice syntax for this functionality.
@@ -20,6 +20,9 @@ However, any related data from `Include(...)` or navigation properties is not ab
 ## Assumptions
 * EF ALWAYS generates SQL with table names surrounded by square brackets.
 * EF ALWAYS uses a table alias in generated SQL, so that the table name does not get repeated in the SQL unless joining to the same table.
+
+## Restrictions
+Since history is immutable, all EF queries within a `TemporalQuery.AsOf(targetTime)` block must use `.AsNoTracking()`.  This avoids the DBContext getting confused and caching prior state data as the current state of the data.  In a future release, the disabling of change tracking for temporal queries may be automatic if I ever figure out the best way to do this.  PR's are welcome.
 
 ## Example Usage
 ### EF Core Mapping
