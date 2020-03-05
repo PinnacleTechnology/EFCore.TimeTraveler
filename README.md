@@ -1,5 +1,9 @@
 # EFCore.TimeTraveler
 
+## Update 3/5/2020
+Checkout the awesome [Adam-Langley/efcore-temporal-query](https://github.com/Adam-Langley/efcore-temporal-query) project that generates time traveling queries without the use of interception!
+
+
 |  |  |
 | --- | --- |
 | **Build** | [![Actions Status](https://github.com/VantageSoftware/EFCore.TimeTraveler/workflows/dotnetcore/badge.svg)](https://github.com/VantageSoftware/EFCore.TimeTraveler/actions) |
